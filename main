@@ -1,0 +1,26 @@
+import numpy as np
+#numbering the type of input in data_dict previously
+def data_processing (data, q):
+    data_real = []
+    data_img = []
+    for i in range(len(data[data_dict[q]])):
+        real_temp = []
+        img_temp = []
+        for j in data[data_dict[q]][i]:
+            j = np.array(j).T
+            dataT = []
+            real = []
+            img = []
+            for k in range(len(j)):
+                real.extend(np.real(j[k]))
+                img.extend(np.imag(j[k]))
+            real = np.array(real).T
+            img = np.array(img).T
+            real_temp.append(real)
+            img_temp.append(img)
+        data_real.append(real_temp)
+        data_img.append(img_temp)
+    real = np.array(data_real)
+    img = np.array(data_img)
+    data = np.concatenate([real, img], axis=2)
+    return data
