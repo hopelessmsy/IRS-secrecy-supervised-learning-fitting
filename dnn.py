@@ -1,44 +1,3 @@
-# -*- coding: utf-8 -*-
-epochs =200
-import scipy.io as sio
-import numpy as np
-from sklearn.model_selection import train_test_split
-from tensorflow.keras import models, layers, regularizers
-from tensorflow.keras.optimizers import Adam
-import matplotlib.pyplot as plt
-import tensorflow as tf
-
-data_ae = sio.loadmat("data_AE_4000.mat")
-data_ai = sio.loadmat("data_AI_4000.mat")
-data_au = sio.loadmat("data_AU_4000.mat")
-data_ie = sio.loadmat("data_IE_4000.mat")
-data_iu = sio.loadmat("data_IU_4000.mat")
-
-f_data = sio.loadmat("data_beamforming_vector_4000.mat")
-
-target = sio.loadmat("phase_4000.mat")
-
-data_dict = {0: "TE", 1: "TI", 2: "TU", 3: "IE", 4: "IU", 5: "phase", 6: "beamforming_vector", 7: "Secrecy"}
-
-p = np.ones([4000, 1, 1])
-
-
-def get_new_data(data, q):
-    new_data1 = []
-    for i in range(len(data[data_dict[q]])):
-        dataTT = []
-        for j in data[data_dict[q]][i]:
-            j = np.array(j).T
-            dataT = []
-            for k in range(len(j)):
-                # Am_value=np.absolute(j[k])
-                Phase_value = np.angle(j[k])
-                dataT.extend( Phase_value)
-            dataT = np.array(dataT).T
-            dataTT.append(dataT)
-        new_data1.append(dataTT)
-    new_data1 = np.array(new_data1)
-    return new_data1
 
 def get_new_data1(data, q):
     data_real = []
@@ -108,6 +67,22 @@ for i in data_test:
             break
         k += 1
 
+        def cnn(l1=1024, l2=2048, gamma=1e-2, lr=1e-4, w1=2, w2=1):
+    model = models.Sequential()
+    model.add(layers.Conv1D(209, w1, activation='relu', kernel_regularizer=regularizers.l2(gamma),
+                            input_shape=(11, 19), padding='same'))
+    model.add(layers.MaxPooling1D(w2))
+    model.add(layers.Flatten())
+    model.add(layers.Dropout(0.4))
+    model.add(layers.Dense(512, activation='tanh', kernel_regularizer=regularizers.l2(gamma)))
+    model.add(layers.Dense(512, activation='tanh', kernel_regularizer=regularizers.l2(gamma)))
+    model.add(layers.Dense(256, activation='tanh', kernel_regularizer=regularizers.l2(gamma)))
+    adam = Adam(learning_rate=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    model.compile(optimizer=adam, loss='mse')
+
+    return model
+        
+        
 def dnn():
     model = models.Sequential()
     model.add(layers.Dense(units=512, activation='tanh'))
@@ -125,7 +100,7 @@ def dnn():
 
 model = dnn()
 history = model.fit(data_train, train_label, verbose=1, batch_size=16, epochs=epochs,
-                    validation_data=(data_test, test_label))  # 用history接收
+                    validation_data=(data_test, test_label)) 
 history_dict = history.history
 train_loss = history_dict["loss"]
 val_loss = history_dict["val_loss"]
