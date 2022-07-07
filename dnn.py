@@ -111,3 +111,22 @@ plt.legend()
 plt.xlabel('epochs')
 plt.ylabel('loss')
 plt.show()
+# for secrecy rate calculation
+for i in range(len(data_test)):
+    k = test_index_list[i]
+
+    φ = np.reshape(φ_list[i], (16, 16))
+    T1 = np.dot(new_data_iu[k], φ)
+    T1 = np.dot(T1, np.reshape(new_data_ai[k], (16, 4)))
+    T1 = T1 + new_data_au[k]
+    T1 = np.dot(T1, f_data[k].T)
+    r1 = (abs(T1)) ** 2 + 1
+
+    T2 = np.dot(new_data_ie[k], φ)
+    T2 = np.dot(T2, np.reshape(new_data_ai[k], (16, 4)))
+    T2 = T2 + new_data_ae[k]
+    T2 = np.dot(T2, f_data[k].T)
+    r2 = (abs(T2)) ** 2 + 1
+
+    rate = r1 / r2
+    rate_list.append(float(rate))
